@@ -1,13 +1,16 @@
 # Getting Started
 
+## Instructional Video
+
+<iframe src="https://drive.google.com/file/d/1TJZLEwKFJer5RMpKn3rh9w2ftYGChPtg/preview" width="100%" height="480" allow="autoplay"></iframe>
+
 ## Prerequisites
 
-- Access to an Openshift 4+ deployment and logged in with the CLI (version 4.11 or higher)
-- Install the Following CLIs
-  - [ansible](https://www.ansible.com/)/[ansible-galaxy](https://galaxy.ansible.com/)
-  - [helm](https://helm.sh/)
+- [oc](https://docs.openshift.com/container-platform/4.12/cli_reference/openshift_cli/getting-started-cli.html) (4.11+)
+- [ansible](https://www.ansible.com/)/[ansible-galaxy](https://galaxy.ansible.com/)
+- [helm](https://helm.sh/)
     - Please use the version included with your Openshift Deployment
-  - [pip3](https://pypi.org/project/pip/)
+- [pip3](https://pypi.org/project/pip/)
 
 ## Install Packages
 
@@ -31,10 +34,10 @@
 
 ## Configuration
 
-For ease of setup, set the `OPENSHIFT_CLUSTER_INFO` variable for use later.
+Log in to your OpenShift cluster via the `oc` client.  Set the `OPENSHIFT_CLUSTER_INFO` variable for use later.
 
 ``` sh
-export OPENSHIFT_CLUSTER_INFO=$(echo "$(oc cluster-info | grep -Eo '.cluster(.*?).com')")
+export OPENSHIFT_CLUSTER_INFO=$(oc cluster-info | head -n 1 | sed 's/^.*https...api//' | sed 's/.6443.*$//' )
 ```
 
 !!! tip "Using Linux?"
@@ -141,16 +144,16 @@ export GITHUB_BACKSTAGE_CLIENT_SECRET=
 
 ## Install
 
-Clone the `janus-platforms` repo and run the next commands from inside of the `ansible/cluster-setup` directory
+Clone the `demo-setup` repo and run the next commands from inside of the `ansible/cluster-setup` directory
 
 ```sh
-git clone https://github.com/janus-idp/janus-platforms.git
-cd janus-platforms/ansible/cluster-setup
+git clone https://github.com/janus-idp/demo-setup.git
+cd demo-setup/ansible/cluster-setup
 ```
 
-### Run Cluster Setup Playbook
+### Run the Software Templates Setup Playbook
 
-Fork the [Software Templates](https://github.com/janus-idp/software-templates) repository to your organization. Ensure that the name of the forked repo remains as `software-templates`
+Fork the [Software Templates](https://github.com/janus-idp/software-templates/fork) repository to your organization. Ensure that the name of the forked repo remains as `software-templates`
 
 Execute the following command to complete setup of the fork. This playbook will customize your fork of the Software Templates repo with relevant information pertaining to your cluster, and mimic the structure of a custom template being used in an enterprise IT environment.
 
@@ -158,7 +161,7 @@ Execute the following command to complete setup of the fork. This playbook will 
 ansible-playbook ./template.yaml
 ```
 
-## Install
+### Run the Cluster Setup Playbook
 
 The Inventory values in `inventory/group_vars/all.yml` can be changed, but it is not required
 
@@ -171,7 +174,9 @@ ansible-playbook site.yaml -i inventory
 !!! note
     The deployment of most infrastructure is delegated to ArgoCD.  Once the playbook successfully runs, it may take several minutes until the demo is fully operational. The deployment can be monitored in the ArgoCD console.
 
-The cluster is now set up to run the Janus IDP Demo.  To create a local copy of the requisite environment variables for future use, run the following command:
+The cluster is now set up to run the Janus IDP Demo. Please refer to the [Architecture](../architecture/architecture.md) and [Demo](../demo/demo.md) sections for further guidance. 
+
+To create a local copy of the requisite environment variables for future use, run the following command:
 
 ``` sh
 echo "export GITHUB_ORGANIZATION=$GITHUB_ORGANIZATION
@@ -191,16 +196,13 @@ export GITHUB_BACKSTAGE_CLIENT_ID=$GITHUB_BACKSTAGE_CLIENT_ID
 export GITHUB_BACKSTAGE_CLIENT_SECRET=$GITHUB_BACKSTAGE_CLIENT_SECRET" > env.sh
 ```
 
-### FAQ
+### Troubleshooting
 
 ??? question "Stuck on `FAILED - RETRYING: [localhost]: Wait for Keycloak to be Ready (xxx retries left)` for over 2 minutes"
     Bounce the pod deployed by the `keycloak` StatefulSet in the `backstage` namespace.  The playbook will pick up again once the new pod is up.
 
 ??? question "Failed on `Run RHSSO Backstage Helm Chart` during initial run `no matches for kind \"Keycloak\" in version...`"
     The RHSSO operator may not have completed installation, try rerunning the Ansible Playbook.
-
-??? question "Failed on `Create Manifests Repo`"
-    Most likely an environment variable is not set, or not set correctly. Validate, delete the Postgres Database Deployment and re-try the playbook.
 
 ??? question "Log in to Argo Cluster"
     To access the console, the password for the `admin` user can be found in the `argocd-cluster` secret.
