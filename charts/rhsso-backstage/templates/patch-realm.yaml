@@ -1,0 +1,36 @@
+{{- if .Values.useVault }}
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: Patch
+metadata:
+  name: rhelm-patches
+spec:
+  serviceAccountRef:
+    name: backstage-patcher
+  patches:
+    update-keycloak-client-realm:
+      targetObjectRef:
+        apiVersion: keycloak.org/v1alpha1
+        kind: KeycloakRealm
+        name: {{ .Values.keycloak.realm.name }}
+        namespace: {{ .Release.Namespace }} 
+      sourceObjectRefs:
+      - apiVersion: v1
+        kind: Secret
+        name: {{ .Release.Name }}-github-realm-credentials
+        namespace: {{ .Release.Namespace }}
+      patchTemplate: |
+        spec:
+          realm:
+            id: {{ .Values.keycloak.realm.name }}
+            realm: {{ .Values.keycloak.realm.name }}
+            enabled: {{ .Values.keycloak.realm.enabled }}
+            displayName: {{ .Values.keycloak.realm.displayName }}
+            identityProviders:
+              - alias: github
+                config:
+                  clientId: "{{ "{{" }} (printf (index . 1).data.clientId | b64dec) {{ "}}" }}"
+                  clientSecret: "{{ "{{" }} (printf (index . 1).data.clientSecret | b64dec) {{ "}}" }}"
+                trustEmail: true
+                providerId: github
+      patchType: application/merge-patch+json
+{{- end }}

@@ -93,6 +93,16 @@
         org: "{{ lookup('ansible.builtin.env', 'GITHUB_ORGANIZATION') }}"
         private_key: "{{ lookup('ansible.builtin.file', lookup('ansible.builtin.env', 'GITHUB_KEY_FILE')) }}"
       token: "{{ vault_token }}"
+  - name: Populate Vault with Keycloak Github App
+    with_items: "{{ env }}"
+    community.hashi_vault.vault_write:
+      url: "https://vault-vault.apps{{ cluster_host }}"
+      path: kv/{{ item.janusinstancename }}/backstage-keycloak
+      validate_certs: false
+      data:
+        githubClientId: "{{ lookup('ansible.builtin.env', 'GITHUB_KEYCLOAK_CLIENT_ID') }}"
+        githubClientSecret: "{{ lookup('ansible.builtin.env', 'GITHUB_KEYCLOAK_CLIENT_SECRET') }}"
+      token: "{{ vault_token }}"
 - name: Install and Configure GitOps.
   hosts: 'localhost'
   tasks:
@@ -137,41 +147,42 @@
           applicationId: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_ID') }}"
           infraOrgName: "{{ item.githubinfraorganization }}"
           infraRevision: "{{ item.githubinfrarevision }}"
+        clusterHost: "{{ item.cluster_host }}"
   - name: Pause for operators to complete install
     pause:
       seconds: 90
 - name: Install RHSSO Backstage Chart.
   hosts: 'localhost'
   tasks:
-  - name: Wait for KeyCloak CRD
-    with_items: "{{ env }}"
-    kubernetes.core.k8s_info:
-      api_version: keycloak.org/v1alpha1
-      kind: Keycloak
-    register: kc_crd
-    until: kc_crd.api_found == true
-    retries: 60
-    delay: 5
-  - name: Pause until Keycloak is Ready
-    pause:
-      seconds: 10
-  - name: Run RHSSO Backstage Helm Chart
-    with_items: "{{ env }}"
-    kubernetes.core.helm:
-      state: present
-      name: rhsso-backstage
-      namespace: "{{ item.namespace }}"
-      chart_ref: ../../charts/rhsso-backstage
-      values:
-        keycloak:
-          realm:
-            identityProvider:
-              clientId: "{{ lookup('ansible.builtin.env', 'GITHUB_KEYCLOAK_CLIENT_ID') }}"
-              clientSecret: "{{ lookup('ansible.builtin.env', 'GITHUB_KEYCLOAK_CLIENT_SECRET') }}"
-              enabled: "{{ false if lookup('ansible.builtin.env', 'GITHUB_KEYCLOAK_CLIENT_SECRET') == '' else true }}"
-        backstage:
-          host: "janus-demo.apps{{ cluster_host }}"
-      create_namespace: true
+  #- name: Wait for KeyCloak CRD
+  #  with_items: "{{ env }}"
+  #  kubernetes.core.k8s_info:
+  #    api_version: keycloak.org/v1alpha1
+  #    kind: Keycloak
+  #  register: kc_crd
+  #  until: kc_crd.api_found == true
+  #  retries: 60
+  #  delay: 5
+  #- name: Pause until Keycloak is Ready
+  #  pause:
+  #    seconds: 10
+  #- name: Run RHSSO Backstage Helm Chart
+  #  with_items: "{{ env }}"
+  #  kubernetes.core.helm:
+  #    state: present
+  #    name: rhsso-backstage
+  #    namespace: "{{ item.namespace }}"
+  #    chart_ref: ../../charts/rhsso-backstage
+  #    values:
+  #      keycloak:
+  #        realm:
+  #          identityProvider:
+  #            clientId: "{{ lookup('ansible.builtin.env', 'GITHUB_KEYCLOAK_CLIENT_ID') }}"
+  #            clientSecret: "{{ lookup('ansible.builtin.env', 'GITHUB_KEYCLOAK_CLIENT_SECRET') }}"
+  #            enabled: "{{ false if lookup('ansible.builtin.env', 'GITHUB_KEYCLOAK_CLIENT_SECRET') == '' else true }}"
+  #      backstage:
+  #        host: "janus-demo.apps{{ cluster_host }}"
+  #    create_namespace: true
   - name: Wait for Keycloak to be Ready
     with_items: "{{ env }}"
     uri:

@@ -1,0 +1,21 @@
+{{- if .Values.useVault }}
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: VaultSecret
+metadata:
+  name: {{ .Release.Name }}-github-realm-credentials
+spec:
+  vaultSecretDefinitions:
+    - authentication:
+        path: kubernetes
+        role: {{ .Release.Name }}-reader
+        serviceAccount:
+          name: default
+      name: githubrealmcredentials
+      path: kv/{{ .Release.Name }}//backstage-keycloak
+  output:
+    name: {{ .Release.Name }}-github-realm-credentials
+    stringData:
+      clientId: '{{ "{{" }} .githubrealmcredentials.clientId {{ "}}" }}'
+      clientSecret: '{{ "{{" }} .githubrealmcredentials.clientSecret {{ "}}" }}'
+    type: Opaque
+{{- end }}

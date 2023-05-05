@@ -26,6 +26,8 @@ spec:
               value: "{{ .Values.git.infraOrgName }}"
             - name: git.infraRevision
               value: "{{ .Values.git.infraRevision }}"
+            - name: clusterHost
+              value: "{{ .Values.clusterHost }}"
       destination:
         server: https://kubernetes.default.svc
         namespace: "{{ .Values.destination.namespace }}"

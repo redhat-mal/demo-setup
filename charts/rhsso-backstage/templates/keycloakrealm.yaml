@@ -11,7 +11,9 @@ spec:
     realm: {{ .Values.keycloak.realm.name }}
     enabled: {{ .Values.keycloak.realm.enabled }}
     displayName: {{ .Values.keycloak.realm.displayName }}
+    identityProviders:
 {{- if .Values.keycloak.realm.identityProvider.enabled }}
+{{- if not .Values.useVault }}
     identityProviders:
       - alias: github
         config:
@@ -19,6 +21,7 @@ spec:
           clientSecret: {{ required "GitHub Identity Provider Client Secret Must be Provided" .Values.keycloak.realm.identityProvider.clientSecret }}
         trustEmail: true
         providerId: github
+{{- end }}
 {{- end }}
   instanceSelector:
     matchLabels:

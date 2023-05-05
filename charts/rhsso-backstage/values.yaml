@@ -19,3 +19,5 @@ janus:
 
 backstage:
   host: ""
+
+useVault: true

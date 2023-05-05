@@ -4,3 +4,4 @@ git:
   applicationId: changeme
   infraOrgName: janus-idp
   infraRevision: main
+clusterHost: changeme
