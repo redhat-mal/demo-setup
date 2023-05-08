@@ -21,3 +21,7 @@ backstage:
   host: ""
 
 useVault: true
+vaultconfig:
+  kvpath: janus-dev
+  namespace: vault-admin
+

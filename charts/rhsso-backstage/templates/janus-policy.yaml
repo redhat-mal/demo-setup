@@ -1,0 +1,16 @@
+{{- if .Values.useVault }}
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: Policy
+metadata:
+  name: {{ .Release.Name }}-kv-policy
+  namespace: "{{ .Values.vaultconfig.namespace }}"
+spec:
+  authentication: 
+    path: kubernetes
+    role: policy-admin
+  policy: |
+    # query existing mounts
+    path "/kv/{{ .Values.vaultconfig.kvpath }}/*" {
+      capabilities = [ "list", "read"]
+    }
+{{- end }}
