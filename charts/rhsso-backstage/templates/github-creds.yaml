@@ -11,7 +11,7 @@ spec:
         serviceAccount:
           name: default
       name: githubrealmcredentials
-      path: kv/{{ .Release.Name }}//backstage-keycloak
+      path: kv/{{ .Values.vaultconfig.kvpath }}//backstage-keycloak
   output:
     name: {{ .Release.Name }}-github-realm-credentials
     stringData:
