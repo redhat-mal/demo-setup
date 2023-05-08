@@ -15,7 +15,7 @@ spec:
   output:
     name: {{ .Release.Name }}-github-realm-credentials
     stringData:
-      clientId: '{{ "{{" }} .githubrealmcredentials.clientId {{ "}}" }}'
-      clientSecret: '{{ "{{" }} .githubrealmcredentials.clientSecret {{ "}}" }}'
+      clientId: '{{ "{{" }} .githubrealmcredentials.githubClientId {{ "}}" }}'
+      clientSecret: '{{ "{{" }} .githubrealmcredentials.githubClientSecret {{ "}}" }}'
     type: Opaque
 {{- end }}
